@@ -83,12 +83,13 @@ class Model
         
         $tableName = !empty($tableName) ? $tableName : $this->tableName;
         
-        $sql = "SELECT * FROM $tableName where id = :id";      
+        $sql = "SELECT * FROM :tableName where id = :id";      
         $modelClassName = static::class;
         
         $st = $this->pdo->prepare($sql); 
         
         $st->bindValue(":id", $id, \PDO::PARAM_INT);
+        $st->bindValue(":tableName", $tableName \PDO::PARAM_STR);
         $st->execute();
         $row = $st->fetch();
         
@@ -110,13 +111,15 @@ class Model
         
     public function getList($numRows=1000000)  
     {
-        $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM $this->tableName
-                ORDER BY  $this->orderBy LIMIT :numRows";
+        $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM :tableName
+                ORDER BY :orderBy LIMIT :numRows";
         
         $modelClassName = static::class;
        
         $st = $this->pdo->prepare($sql);
         $st->bindValue( ":numRows", $numRows, \PDO::PARAM_INT );
+        $st->bindValue( ":tableName", $this->tableName, \PDO::PARAM_STR );
+        $st->bindValue( ":orderBy", $this->orderBy, \PDO::PARAM_STR );
         $st->execute();
         $list = array();
         
@@ -139,8 +142,8 @@ class Model
      */
     public function getPage($pageNumber = 1, $limit = 2)
     {
-        $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM $this->tableName
-                ORDER BY  $this->orderBy LIMIT :limit OFFSET :offset";
+        $sql = "SELECT SQL_CALC_FOUND_ROWS * FROM :tableName
+                ORDER BY :orderBy LIMIT :limit OFFSET :offset";
 
         $modelClassName = static::class;
         $offset = ($pageNumber - 1)*$limit;
@@ -148,7 +151,8 @@ class Model
         $st = $this->pdo->prepare($sql);
         $st->bindValue( ":limit", intval($limit), \PDO::PARAM_INT );
         $st->bindValue( ":offset", intval($offset), \PDO::PARAM_INT );
-
+        $st->bindValue( ":tableName", $this->tableName, \PDO::PARAM_STR );
+        $st->bindValue( ":orderBy", $this->orderBy, \PDO::PARAM_STR );
         $st->execute();
         
         while ( $row = $st->fetch() ) {
@@ -179,8 +183,9 @@ class Model
     */
     public function delete() 
     {
-        $st = $this->pdo->prepare("DELETE FROM $this->tableName WHERE id = :id LIMIT 1" );
+        $st = $this->pdo->prepare("DELETE FROM :tableName WHERE id = :id LIMIT 1" );
         $st->bindValue( ":id", $this->id, \PDO::PARAM_INT );
+        $st->bindValue( ":tableName", $this->tableName, \PDO::PARAM_STR );
         $st->execute();
 
     }   
